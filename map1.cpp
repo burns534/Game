@@ -67,7 +67,6 @@ class Tile
   private:
     Coord location;
     bool visited;
-    Dict<RGB*> indexing;
     std::string name;
     char symbol;
     bool can_pass;
@@ -101,17 +100,7 @@ class Tile
       green[4] = GREEN5;
       foreground = GREEN2;
       background = green[d->r() % 5];
-      indexing[LIGHT_GREEN] = new RGB(180, 223, 38);
-      indexing[LIGHT_BLUE] = new RGB(95, 217, 255);
-      indexing[COLOR_BROWN] = new RGB(121, 80, 54);
-      indexing[COLOR_TAN] = new RGB(220, 200, 160);
-      indexing[COLOR_ORANGE] = new RGB(255, 150, 0);
-      indexing[YELLOW] = new RGB(255, 255, 30);
-      indexing[GREEN1] = new RGB(190, 200, 110);
-      indexing[GREEN2] = new RGB(190, 200, 170);
-      indexing[GREEN3] = new RGB(90, 110, 40);
-      indexing[GREEN4] = new RGB(40, 80, 15);
-      indexing[GREEN5] = new RGB(60, 150, 40);
+
     }
     ~Tile() {}
     /* need cpy ctor */
@@ -132,6 +121,12 @@ class Tile
     void set_fore(short c) { foreground = c; }
     short get_back() { return background; }
     short get_fore() { return foreground; }
+    void set_r(short r) { R = r; }
+    void set_g(short g) { G = g; }
+    void set_b(short b) { B = b; }
+    short get_r() { return R; }
+    short get_g() { return G; }
+    short get_b() { return B; }
     const char * get_tag() { return tag.c_str(); }
     std::string &get_tags() { return tag; }
 };
@@ -149,8 +144,9 @@ class Map
     short R[ex][why];
     short G[ex][why];
     short B[ex][why];
-    int colorcount;
-    std::vector< std::vector< std::vector< short> > > lookup;
+    int colorcount; //counts how many new colors initialized, for indexing
+    std::vector< std::vector< std::vector< short> > > lookup; //r,g,b key gives colorpair value
+    Dict<RGB*> indexing; //native color key gives pointer to rgb struct
   public:
     Map()
     {
@@ -195,12 +191,28 @@ class Map
       init_color(GREEN3, 90*3.9, 110*3.9, 40*3.9);
       init_color(GREEN4, 40*3.9, 80*3.9, 15*3.9);
       init_color(GREEN5, 60*3.9, 150*3.9, 40*3.9);
+
+      indexing[LIGHT_GREEN] = new RGB(180, 223, 38);
+      indexing[LIGHT_BLUE] = new RGB(95, 217, 255);
+      indexing[COLOR_BROWN] = new RGB(121, 80, 54);
+      indexing[COLOR_TAN] = new RGB(220, 200, 160);
+      indexing[COLOR_ORANGE] = new RGB(255, 150, 0);
+      indexing[YELLOW] = new RGB(255, 255, 30);
+      indexing[GREEN1] = new RGB(190, 200, 110);
+      indexing[GREEN2] = new RGB(190, 200, 170);
+      indexing[GREEN3] = new RGB(90, 110, 40);
+      indexing[GREEN4] = new RGB(40, 80, 15);
+      indexing[GREEN5] = new RGB(60, 150, 40);
       srand( time(NULL) );
       outfile << "breakpoint\n";
       colorcount = 10;
       for (int y = 0; y < why ; y++)
       {
-        for (int x = 0; x < ex; x++) World[x][y] = new Tile(x,y);
+        for (int x = 0; x < ex; x++)
+        {
+          World[x][y] = new Tile(x,y);
+          initialize(*(World[x][y]));
+        }
       }
       outfile << "breakpointhere\n";
       currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
@@ -229,25 +241,23 @@ class Map
       endwin(); exit(1); outfile.close();
     }
 
+    void initialize(Tile &t)
+    {
+      short c = t.get_back();
+      //define rgb values for each tile
+      t.set_r(indexing[c]->r);
+      t.set_g(indexing[c]->g);
+      t.set_b(indexing[c]->b);
+      //add values to r g and b arrays
+      int posx = t.getpos()->x;
+      int posy = t.getpos()->y;
+      R[posx][posy] = t.get_r();
+      G[posx][posy] = t.get_g();
+      B[posx][posy] = t.get_b();
+    }
+
     void render(bool here, Tile &t)
     {
-      std::string p = t.get_tag();
-      // if(p == "mountain")
-      // {
-      //   t.set_fore(COLOR_BLACK); //change
-      //   t.set_back(COLOR_BROWN);
-      // }
-      // if(p == "water")
-      // {
-      //   t.set_fore(LIGHT_BLUE);
-      //   t.set_back(COLOR_BLUE);
-      // }
-      // if(p == "sand")
-      // {
-      //   outfile << "sand true ";
-      //   t.set_fore(COLOR_BROWN);
-      //   t.set_back(COLOR_TAN);
-      // }
       char temp = t.getsymbol();
       short f = t.get_fore();
       short tempcolor;
@@ -281,6 +291,68 @@ class Map
       attroff(A_BLINK);
       attroff(COLOR_PAIR(tempcolor));
       t.setblink(false);
+    }
+    // void render(bool here, Tile &t)
+    // {
+    //   char temp = t.getsymbol();
+    //   short f = t.get_fore();
+    //   short tempcolor;
+    //   if (here)
+    //   {
+    //     // need access to all tile rgb values and the rgb vector needs to be filled with
+    //     // initialized colors..
+    //     if (!colors[f][t.get_back()])
+    //     {
+    //       colors[f][t.get_back()] = colorcount;
+    //       init_pair(colorcount, f, t.get_back());
+    //       colorcount++;
+    //     }
+    //     temp = 'X';
+    //     t.setblink(true);
+    //   }
+    //   else if (!colors[f][t.get_back()])
+    //   {
+    //     colors[f][t.get_back()] = colorcount;
+    //     init_pair(colorcount, f, t.get_back());
+    //     colorcount++;
+    //   }
+    //   tempcolor = colors[f][t.get_back()];
+    //   t.set_r()
+    //   //if(blink) attron(A_BLINK);
+    //   attron(COLOR_PAIR(tempcolor));
+    //   mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
+    //   mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
+    //   if(!here) mvaddch(t.getpos()->y, t.getpos()->x *2 + 1, ' ');
+    //   attroff(A_BLINK);
+    //   attroff(COLOR_PAIR(tempcolor));
+    //   t.setblink(false);
+    // }
+
+
+    void blur(double (&type)[ex][why], char t)
+    {
+      srand( time(NULL) );
+      double sum;
+      for(int y = 1; y < why-2; y ++)
+      {
+        for(int x = 1; x < ex-2; x ++)
+        {
+          sum = 0;
+          sum += type[x][y]*.25;
+          sum += type[x-1][y]*.125; // need to make these work for edge conditions
+          sum += type[x+1][y]*.125;
+          sum += type[x][y-1]*.125;
+          sum += type[x][y+1]*.125;
+          sum += type[x-1][y-1]*.0625;
+          sum += type[x+1][y-1]*.0625;
+          sum += type[x-1][y+1]*.0625;
+          sum += type[x+1][y+1]*.0625;
+          type[x][y] = sum;
+          if (t == 'r') World[x][y]->r_set(sum);
+          else if (t == 'g') World[x][y]->g_set(sum);
+          else if (t == 'b') World[x][y]->b_set(sum);
+        }
+      }
     }
 
     void gen(std::string tag, Coord &loc, int count, short &stop, char texture,
