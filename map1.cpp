@@ -68,6 +68,9 @@ class Tile
     std::string tag;
     short green[5];
     Dice* d;
+    short R;
+    short G;
+    short B;
   public:
     Tile(int x, int y)
     {
@@ -85,17 +88,6 @@ class Tile
       green[2] = GREEN3;
       green[3] = GREEN4;
       green[4] = GREEN5;
-      init_color(LIGHT_GREEN, 700, 850, 149);
-      init_color(LIGHT_BLUE, 359, 846, 1000);
-      init_color(COLOR_BROWN, 121*3.9, 80*3.9, 54*3.9);
-      init_color(COLOR_TAN, 220*3.9, 200*3.9, 160*3.9);
-      init_color(COLOR_ORANGE, 255*3.9, 150*3.9, 0);
-      init_color(YELLOW, 255*3.9, 255*3.9, 30*3.9);
-      init_color(GREEN1, 190*3.9, 200*3.9, 110*3.9);
-      init_color(GREEN2, 190*3.9, 200*3.9, 170*3.9);
-      init_color(GREEN3, 90*3.9, 110*3.9, 40*3.9);
-      init_color(GREEN4, 40*3.9, 80*3.9, 15*3.9);
-      init_color(GREEN5, 60*3.9, 150*3.9, 40*3.9);
       foreground = GREEN2;
       background = green[d->r() % 5];
     }
@@ -122,23 +114,26 @@ class Tile
     std::string &get_tags() { return tag; }
 };
 
-
+template< int ex , int why >
 class Map
 {
   private:
-    Tile* World[51][51];
+    Tile* World[ex][why];
     Coord currentpos;
-    double mountains[51][51];
-    double sand[51][51];
+    double mountains[ex][why];
+    double sand[ex][why];
     short colors[30][30];
-    double water[51][51];
+    double water[ex][why];
+    short R[ex][why];
+    short G[ex][why];
+    short B[ex][why];
     int colorcount;
   public:
     Map()
     {
-      for (int i = 0; i < 51; i++)
+      for (int k = 0; k < why; k++)
       {
-        for(int k = 0; k < 51; k++)
+        for(int i = 0; i < ex; i++)
         {
           water[i][k] = 0;
           sand[i][k] = 0;
@@ -157,12 +152,23 @@ class Map
         exit(1);
       }
       clear();
+      init_color(LIGHT_GREEN, 700, 850, 149);
+      init_color(LIGHT_BLUE, 359, 846, 1000);
+      init_color(COLOR_BROWN, 121*3.9, 80*3.9, 54*3.9);
+      init_color(COLOR_TAN, 220*3.9, 200*3.9, 160*3.9);
+      init_color(COLOR_ORANGE, 255*3.9, 150*3.9, 0);
+      init_color(YELLOW, 255*3.9, 255*3.9, 30*3.9);
+      init_color(GREEN1, 190*3.9, 200*3.9, 110*3.9);
+      init_color(GREEN2, 190*3.9, 200*3.9, 170*3.9);
+      init_color(GREEN3, 90*3.9, 110*3.9, 40*3.9);
+      init_color(GREEN4, 40*3.9, 80*3.9, 15*3.9);
+      init_color(GREEN5, 60*3.9, 150*3.9, 40*3.9);
       srand( time(NULL) );
       outfile << "breakpoint\n";
       colorcount = 10;
-      for (int x = 0; x < 51; x++)
+      for (int y = 0; y < why ; y++)
       {
-        for (int y = 0; y < 51; y++) World[x][y] = new Tile(x,y);
+        for (int x = 0; x < ex; x++) World[x][y] = new Tile(x,y);
       }
       outfile << "breakpointhere\n";
       currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
@@ -252,7 +258,7 @@ class Map
       short ct;
       double prob;
       failbit = false;
-      if (temp.x < 1 || temp.x > 49 || temp.y < 1 || temp.y > 49)
+      if (temp.x < 1 || temp.x > ex-2 || temp.y < 1 || temp.y > why-2)
       {
         failbit = true; return; //prevent segfault
       }
@@ -266,11 +272,10 @@ class Map
         if(dir == 0 && !World[temp.x][temp.y-1]->get_terrain()) { temp.y--; break; }
       }
 
-      if (temp.x < 1 || temp.x > 49 || temp.y < 1 || temp.y > 49)
+      if (temp.x < 1 || temp.x > ex-2 || temp.y < 1 || temp.y > why-2)
       {
         temp = loc;
-        goto retry;
-        //gen(tag, loc, count, stop, texture, colorfore, colorback, failbit); //change directions and prevent segfault
+        goto retry; //change directions because previous step failed
       }
       // failed to find undeclared neighbor
       if (ct == 9)
@@ -321,9 +326,9 @@ class Map
     }
     void getwater()
     {
-      for (int i = 0; i < 51; i++)
+      for (int i = 0; i < why; i++)
       {
-        for (int k = 0; k < 51; k++) outfile << water[i][k] << " ";
+        for (int k = 0; k < ex; k++) outfile << water[k][i] << " ";
       }
     }
 
@@ -331,21 +336,21 @@ class Map
     {
       Coord temp;
       std::string t = name;
-      temp.x = rand() % 49; temp.y = rand() % 49;
+      temp.x = rand() % (ex-2); temp.y = rand() % (why-2);
       int count = 0; bool failbit;
       for(short stop = 0; stop < 4; count++)
       {
         gen(t, temp, count, stop, texture, colorfore, colorback, failbit, step);
         if(failbit)
         {
-          temp.x = rand() % 49;
-          temp.y = rand() % 49;
+          temp.x = rand() % (ex-2);
+          temp.y = rand() % (why-2);
           count--;
         }
       }
     }
 
-    void blur(double (&type)[51][51], const char* tag, short fore, short back)
+    void blur(double (&type)[ex][why], const char* tag, short fore, short back)
     {
       srand( time(NULL) );
       double sum;
@@ -354,9 +359,9 @@ class Map
       if (t.compare("water") == 0) temp = '~';
       else if (t == "mountain") temp = '^';
       else if (t.compare("sand") == 0) temp = '*';
-      for(int y = 1; y < 49; y ++)
+      for(int y = 1; y < why-2; y ++)
       {
-        for(int x = 1; x < 49; x ++)
+        for(int x = 1; x < ex-2; x ++)
         {
           sum = 0;
           sum += type[x][y]*.25;
@@ -407,7 +412,7 @@ class Map
       for (int x = startx; x < startx + 5; ct++, x++)
       {
         for ( int y = starty; y < limit + topy; y++)
-        if (0 <= x && x < 51 && 0 <= y && y < 51) render(false, *World[x][y]);
+        if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
         // make outer most layer more dim than the rest? would look really cool...
         (ct < 2)? limit+=1:limit-=1;
         (ct < 2)? starty-=1:starty+=1;
@@ -420,9 +425,9 @@ class Map
       Coord temp = currentpos;
       //std::cout << pos->getpos()->x << " " << pos->getpos()->y << "\n";
       if( in == 'a' && currentpos.x > 0 ) currentpos.x -= 1;
-      else if ( in == 'd' && currentpos.x < 50 ) currentpos.x += 1;
+      else if ( in == 'd' && currentpos.x < ex - 1 ) currentpos.x += 1;
       else if ( in == 'w' && currentpos.y > 0 ) currentpos.y -= 1;
-      else if ( in == 's' && currentpos.y < 50 ) currentpos.y += 1;
+      else if ( in == 's' && currentpos.y < why - 1 ) currentpos.y += 1;
       if(temp.x != currentpos.x || temp.y != currentpos.y)
       {
         vision(currentpos);
@@ -433,9 +438,9 @@ class Map
     void debug()
     {
       outfile << "DEBUG\n";
-      for(int i = 0; i < 51; i++)
+      for(int i = 0; i < why; i++)
       {
-        for(int k = 0; k < 51; k++) render(false, *World[i][k]);
+        for(int k = 0; k < ex; k++) render(false, *World[k][i]);
       }
     }
 
