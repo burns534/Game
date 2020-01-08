@@ -26,6 +26,16 @@ struct Coord
   int x,y;
 };
 
+struct RGB
+{
+  short r,g,b;
+  RGB(short q, short w, short e)
+  {
+    r = q; g = w; b = e;
+  }
+  void set(short q, short w, short e) { r = q; g = w; b = e; }
+};
+
 class Dice
 {
   public:
@@ -57,6 +67,7 @@ class Tile
   private:
     Coord location;
     bool visited;
+    Dict<RGB*> indexing;
     std::string name;
     char symbol;
     bool can_pass;
@@ -90,6 +101,17 @@ class Tile
       green[4] = GREEN5;
       foreground = GREEN2;
       background = green[d->r() % 5];
+      indexing[LIGHT_GREEN] = new RGB(180, 223, 38);
+      indexing[LIGHT_BLUE] = new RGB(95, 217, 255);
+      indexing[COLOR_BROWN] = new RGB(121, 80, 54);
+      indexing[COLOR_TAN] = new RGB(220, 200, 160);
+      indexing[COLOR_ORANGE] = new RGB(255, 150, 0);
+      indexing[YELLOW] = new RGB(255, 255, 30);
+      indexing[GREEN1] = new RGB(190, 200, 110);
+      indexing[GREEN2] = new RGB(190, 200, 170);
+      indexing[GREEN3] = new RGB(90, 110, 40);
+      indexing[GREEN4] = new RGB(40, 80, 15);
+      indexing[GREEN5] = new RGB(60, 150, 40);
     }
     ~Tile() {}
     /* need cpy ctor */
@@ -128,6 +150,7 @@ class Map
     short G[ex][why];
     short B[ex][why];
     int colorcount;
+    std::vector< std::vector< std::vector< short> > > lookup;
   public:
     Map()
     {
@@ -141,6 +164,15 @@ class Map
           mountains[i][k] = 0;
         }
       }
+      lookup = std::vector< std::vector< std::vector<short> > >
+      (256, std::vector< std::vector<short> >(256, std::vector<short>(256)));
+      // for (int i = 0; i < 256; i++)
+      // {
+      //   for (int k = 0; k < 256; k++)
+      //   {
+      //     for (int j = 0; j < 256; j++, colorcount++) lookup[i][k].push_back(colorcount);
+      //   }
+      // }
       outfile.open("log.txt");
       initscr(); curs_set(0); use_default_colors();
       start_color(); keypad(stdscr, TRUE);
