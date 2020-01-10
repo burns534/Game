@@ -259,7 +259,7 @@ class Map
 
       currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
       render(true, *World[currentpos.x][currentpos.y]);
-      vision(*World[currentpos.x][currentpos.y]->getpos(), 5);
+      vision(*World[currentpos.x][currentpos.y]->getpos(), 6);
 
       //smooth edges, fill in holes
       // for (int i = 0; i < 3; i ++)
@@ -305,120 +305,6 @@ class Map
       G[posx][posy] = t.get_g();
       B[posx][posy] = t.get_b();
     }
-    //baddd
-    // void initlookup(Tile &t)
-    // {
-    //   if (lookup[t.get_r()][t.get_g()][t.get_b()] == 0)
-    //   {
-    //     //outfile << "init\n";
-    //     init_color(colorcount, t.get_r()*3.9, t.get_g()*3.9, t.get_b()*3.9);
-    //     lookup[t.get_r()][t.get_g()][t.get_b()] = colorcount;
-    //     colorcount++;
-    //   }
-    // }
-
-    // void render(bool here, Tile &t)
-    // {
-    //   char temp = t.getsymbol();
-    //   short f = t.get_fore();
-    //   short tempcolor;
-    //   if (here)
-    //   {
-    //     if (t.get_back() == COLOR_BROWN) f = COLOR_ORANGE;
-    //     else if (t.get_back() == COLOR_BLUE) f = YELLOW;
-    //     else if (t.get_back() == COLOR_TAN) f = COLOR_RED;
-    //     else f = COLOR_BROWN;
-    //     if (!colors[f][t.get_back()])
-    //     {
-    //       colors[f][t.get_back()] = colorcount;
-    //       init_pair(colorcount, f, t.get_back());
-    //       colorcount++;
-    //     }
-    //     temp = 'X';
-    //     t.setblink(true);
-    //   }
-    //   else if (!colors[f][t.get_back()])
-    //   {
-    //     colors[f][t.get_back()] = colorcount;
-    //     init_pair(colorcount, f, t.get_back());
-    //     colorcount++;
-    //   }
-    //   tempcolor = colors[f][t.get_back()];
-    //   //if(blink) attron(A_BLINK);
-    //   attron(COLOR_PAIR(tempcolor));
-    //   mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
-    //   mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
-    //   if(!here) mvaddch(t.getpos()->y, t.getpos()->x *2 + 1, ' ');
-    //   attroff(A_BLINK);
-    //   attroff(COLOR_PAIR(tempcolor));
-    //   t.setblink(false);
-    // }
-    // void render(bool here, Tile &t, bool undo)
-    // {
-    //   if(!undo)
-    //   {
-    //     char temp = t.getsymbol();
-    //     // short back = lookup[t.get_r()][t.get_g()][t.get_b()];
-    //     //defines rgb for background color
-    //     short red = t.get_r();
-    //     short green = t.get_g();
-    //     short blue = t.get_b();
-    //     //outfile << "back: " << back << "\n";
-    //     short f = LIGHT_GREEN;
-    //     short tempcolor;
-    //     if(paircount > 100)
-    //     {
-    //       paircount = 20;
-    //       colorcount = 20;
-    //     }
-    //     // make color for background
-    //     init_color(colorcount, red*3.9, green*3.9, blue*3.9);
-    //     if (here)
-    //     {
-    //       //invert color for cursor
-    //       short r = t.get_r() + 2*(128-t.get_r());
-    //       short g = t.get_g() + 2*(128-t.get_g());
-    //       short b = t.get_b() + 2*(128-t.get_b());
-    //       // if (!lookup[r][g][b])
-    //       // {
-    //       //   lookup[r][g][b] = colorcount;
-    //       //   init_color(colorcount, r*3.9, g*3.9, b*3.9);
-    //       //   colorcount++;
-    //       // }
-    //       f = colorcount+1;
-    //       init_color(f, r*3.9, g*3.9, b*3.9); // make cursor color
-    //       if (!colors[f][colorcount]) // if no pair for fore/back
-    //       {
-    //         colors[f][colorcount] = paircount; //define it in colors
-    //         init_pair(paircount, f, colorcount); //initialize it
-    //         paircount++; //increment paircount
-    //       }
-    //       temp = 'X';
-    //       colorcount++;
-    //     }
-    //     else if (!colors[f][colorcount]) // else if no pair for std cursor
-    //     {
-    //       colors[f][colorcount] = paircount;
-    //       init_pair(paircount, f, colorcount);
-    //       paircount++;
-    //     }
-    //     colorcount++;
-    //     // tempcolor = colors[f][back]; //color to be used
-    //     tempcolor = paircount - 1;
-    //     //if(blink) attron(A_BLINK);
-    //     attron(COLOR_PAIR(tempcolor));
-    //     mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
-    //     mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
-    //     if(!here) mvaddch(t.getpos()->y, t.getpos()->x *2 + 1, ' ');
-    //     //attroff(A_BLINK);
-    //     attroff(COLOR_PAIR(tempcolor));
-    //   }
-    //   else
-    //   {
-    //     mvaddch(t.getpos()->y, t.getpos()->x * 2, ' ');
-    //     mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
-    //   }
-    // }
 
     void render( bool here, Tile &t )
     {
@@ -672,13 +558,21 @@ class Map
       short x = loc.x - radius; short y = loc.y;
       register int start;
       register int stop;
+      render(false, *World[loc.x+1][loc.y + 6]);
+      render(false, *World[loc.x-1][loc.y + 6]);
+      render(false, *World[loc.x+1][loc.y - 6]);
+      render(false, *World[loc.x-1][loc.y - 6]);
+      render(false, *World[loc.x - 6][loc.y - 1]);
+      render(false, *World[loc.x - 6][loc.y + 1]);
+      render(false, *World[loc.x + 6][loc.y - 1]);
+      render(false, *World[loc.x + 6][loc.y + 1]);
+
       for (; x <= loc.x + radius; x++)
       {
         start = -(int)sqrt(radius*radius - (loc.x-x)*(loc.x-x));
         stop = (int)sqrt(radius*radius - (loc.x-x)*(loc.x-x));
-        outfile << "radius, x: " << radius << ", " << loc.x-x<< "\n";
-        outfile << "start,stop: " << start << ", " << stop << "\n";
-        // render(false, *World[x][y])
+        // outfile << "radius, x: " << radius << ", " << loc.x-x<< "\n";
+        // outfile << "start,stop: " << start << ", " << stop << "\n";
         for (y = start + loc.y; y < stop + loc.y+1; y ++)
         {
           if(x <= 118 && y <= 72 && x >= 0 && y >= 0)
@@ -720,74 +614,73 @@ class Map
       }
       if(temp.x != currentpos.x || temp.y != currentpos.y)
       {
-        // if(lr)
-        // {
-        //   mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
-        //   mvaddch(temp.y - y, (temp.x - 6 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - y, (temp.x - 6 * x) * 2, ' ');
-        //   mvaddch(temp.y + y, (temp.x - 6 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + y, (temp.x - 6 * x) * 2, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
-        //   mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
-        //   mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
-        //   mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
-        //   mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
-        //   mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2, ' ');
-        //   mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
-        //   mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
-        //   mvaddch(temp.y + 7 * y, temp.x * 2 + 1, ' ');
-        //   mvaddch(temp.y + 7 * y, temp.x * 2, ' ');
-        // }
-        // else
-        // {
-        //   mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
-        //   mvaddch(temp.y, (temp.x + 7 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y, (temp.x + 7 * x) * 2, ' ');
-        //   mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2, ' ');
-        //   mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2 + 1, ' ');
-        //   mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2, ' ');
-        //   mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
-        //   mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
-        // }
-        //vision(currentpos);
-        vision(currentpos, 5);
+        if(lr)
+        {
+          mvaddch(temp.y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y - y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y + y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y + 3 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 3 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y + 4 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 4 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y + 5 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 5 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
+          mvaddch(temp.y + 7 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y + 7 * y, temp.x * 2, ' ');
+        }
+        else
+        {
+          mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
+          mvaddch(temp.y, (temp.x + 7 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x + 7 * x) * 2, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x + 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x + 5 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x + 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x + 4 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 3 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, temp.x * 2, ' ');
+        }
+        vision(currentpos, 6);
         render(false, *World[temp.x][temp.y]);
         render(true, *World[currentpos.x][currentpos.y]);
       }
