@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <curses.h>
+#include <ncurses.h>
 #include <dict>
 #include <random>
 #include <vector>
@@ -18,6 +18,7 @@
 #define GREEN3 16
 #define GREEN4 17
 #define GREEN5 18
+#define DEFAULT 0
 
 
 std::ofstream outfile;
@@ -81,6 +82,7 @@ class Tile
     short R;
     short G;
     short B;
+    short pairid;
   public:
     Tile(int x, int y)
     {
@@ -100,6 +102,7 @@ class Tile
       green[4] = GREEN5;
       foreground = GREEN2;
       background = green[d->r() % 5];
+      short pairid = 0;
 
     }
     ~Tile() {}
@@ -127,6 +130,8 @@ class Tile
     short get_r() { return R; }
     short get_g() { return G; }
     short get_b() { return B; }
+    short get_pairid() { return pairid; }
+    void set_pairid(short k) { pairid = k; }
     const char * get_tag() { return tag.c_str(); }
     std::string &get_tags() { return tag; }
 };
@@ -139,12 +144,13 @@ class Map
     Coord currentpos;
     double mountains[ex][why];
     double sand[ex][why];
-    short colors[30][30];
     double water[ex][why];
+    short colors[256][256];
     short R[ex][why];
     short G[ex][why];
     short B[ex][why];
     int colorcount; //counts how many new colors initialized, for indexing
+    int paircount; //counts how many pairs initialized, for indexing
     std::vector< std::vector< std::vector< short> > > lookup; //r,g,b key gives colorpair value
     Dict<RGB*> indexing; //native color key gives pointer to rgb struct
   public:
@@ -162,13 +168,13 @@ class Map
       }
       lookup = std::vector< std::vector< std::vector<short> > >
       (256, std::vector< std::vector<short> >(256, std::vector<short>(256)));
-      // for (int i = 0; i < 256; i++)
-      // {
-      //   for (int k = 0; k < 256; k++)
-      //   {
-      //     for (int j = 0; j < 256; j++, colorcount++) lookup[i][k].push_back(colorcount);
-      //   }
-      // }
+      for (int i = 0; i < 256; i++)
+      {
+        for (int k = 0; k < 256; k++)
+        {
+          for (int j = 0; j < 256; j++) lookup[i][k].push_back(0);
+        }
+      }
       outfile.open("log.txt");
       initscr(); curs_set(0); use_default_colors();
       start_color(); keypad(stdscr, TRUE);
@@ -191,6 +197,7 @@ class Map
       init_color(GREEN3, 90*3.9, 110*3.9, 40*3.9);
       init_color(GREEN4, 40*3.9, 80*3.9, 15*3.9);
       init_color(GREEN5, 60*3.9, 150*3.9, 40*3.9);
+      init_pair(DEFAULT, COLOR_BLACK, -1);
 
       indexing[LIGHT_GREEN] = new RGB(180, 223, 38);
       indexing[LIGHT_BLUE] = new RGB(95, 217, 255);
@@ -205,40 +212,81 @@ class Map
       indexing[GREEN5] = new RGB(60, 150, 40);
       srand( time(NULL) );
       outfile << "breakpoint\n";
-      colorcount = 10;
+      colorcount = 20;
+      paircount = 20;
+      for (int y = 0; y < why ; y++)
+      {
+        for (int x = 0; x < ex; x++) World[x][y] = new Tile(x,y);
+      }
       for (int y = 0; y < why ; y++)
       {
         for (int x = 0; x < ex; x++)
         {
-          World[x][y] = new Tile(x,y);
-          initialize(*(World[x][y]));
+          initialize(*(World[x][y])); //adds rgb values to each tile
         }
       }
       outfile << "breakpointhere\n";
-      currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
-      render(true, *World[currentpos.x][currentpos.y]);
+
+      //gassian blur to the map
+
+      // no longer necessary
+      // for (int y = 0; y < why ; y++)
+      // {
+      //   for (int x = 0; x < ex; x++)
+      //   {
+      //     initlookup(*(World[x][y])); //initializes new colors for each tile
+      //   }
+      // }
+
+      //generate terrain
+      blur(R, 'r');
+      blur(G, 'g');
+      blur(B, 'b');
+      blur(R, 'r');
+      //blur(G, 'g');
+      blur(B, 'b');
+
       for (int i = 0; i < 3; i++)
       terrain("water", '~', LIGHT_BLUE, COLOR_BLUE, 1.5);
       for (int i = 0; i < 2; i++)
       terrain("mountain", '^', COLOR_BLACK, COLOR_BROWN, .6);
       for (int i = 0; i < 2; i++)
       terrain("sand", '*', COLOR_BROWN, COLOR_TAN, .8);
-      for (int i = 0; i < 3; i ++)
-      blur(water, "water", LIGHT_BLUE, COLOR_BLUE);
-      for (int i = 0; i < 20; i++)
-      {
-      blur(mountains, "mountain", COLOR_BLACK, COLOR_BROWN);
-      blur(sand, "sand", COLOR_BROWN, COLOR_TAN);
-      }
+
+
+
+
+      currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
+      render(true, *World[currentpos.x][currentpos.y]);
+      vision(*World[currentpos.x][currentpos.y]->getpos());
+
+      //smooth edges, fill in holes
+      // for (int i = 0; i < 3; i ++)
+      // blur(water, "water", LIGHT_BLUE, COLOR_BLUE);
+      // for (int i = 0; i < 20; i++)
+      // {
+      // blur(mountains, "mountain", COLOR_BLACK, COLOR_BROWN);
+      // blur(sand, "sand", COLOR_BROWN, COLOR_TAN);
+      // }
 
       /* NEED RIVER FUNCTION or option for terrain */
-      //generates terrain variation e.g. lakes, dirt, mountains
-      outfile << "breakpoint 1\n";
+
     }
 
     ~Map()
     {
       endwin(); exit(1); outfile.close();
+      delete indexing[LIGHT_GREEN];
+      delete indexing[LIGHT_BLUE];
+      delete indexing[COLOR_BROWN];
+      delete indexing[COLOR_TAN];
+      delete indexing[COLOR_ORANGE];
+      delete indexing[YELLOW];
+      delete indexing[GREEN1];
+      delete indexing[GREEN2];
+      delete indexing[GREEN3];
+      delete indexing[GREEN4];
+      delete indexing[GREEN5];
     }
 
     void initialize(Tile &t)
@@ -252,46 +300,22 @@ class Map
       int posx = t.getpos()->x;
       int posy = t.getpos()->y;
       R[posx][posy] = t.get_r();
+      //outfile << "r: " << t.get_r() << "\n";
       G[posx][posy] = t.get_g();
       B[posx][posy] = t.get_b();
     }
+    //baddd
+    // void initlookup(Tile &t)
+    // {
+    //   if (lookup[t.get_r()][t.get_g()][t.get_b()] == 0)
+    //   {
+    //     //outfile << "init\n";
+    //     init_color(colorcount, t.get_r()*3.9, t.get_g()*3.9, t.get_b()*3.9);
+    //     lookup[t.get_r()][t.get_g()][t.get_b()] = colorcount;
+    //     colorcount++;
+    //   }
+    // }
 
-    void render(bool here, Tile &t)
-    {
-      char temp = t.getsymbol();
-      short f = t.get_fore();
-      short tempcolor;
-      if (here)
-      {
-        if (t.get_back() == COLOR_BROWN) f = COLOR_ORANGE;
-        else if (t.get_back() == COLOR_BLUE) f = YELLOW;
-        else if (t.get_back() == COLOR_TAN) f = COLOR_RED;
-        else f = COLOR_BROWN;
-        if (!colors[f][t.get_back()])
-        {
-          colors[f][t.get_back()] = colorcount;
-          init_pair(colorcount, f, t.get_back());
-          colorcount++;
-        }
-        temp = 'X';
-        t.setblink(true);
-      }
-      else if (!colors[f][t.get_back()])
-      {
-        colors[f][t.get_back()] = colorcount;
-        init_pair(colorcount, f, t.get_back());
-        colorcount++;
-      }
-      tempcolor = colors[f][t.get_back()];
-      //if(blink) attron(A_BLINK);
-      attron(COLOR_PAIR(tempcolor));
-      mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
-      mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
-      if(!here) mvaddch(t.getpos()->y, t.getpos()->x *2 + 1, ' ');
-      attroff(A_BLINK);
-      attroff(COLOR_PAIR(tempcolor));
-      t.setblink(false);
-    }
     // void render(bool here, Tile &t)
     // {
     //   char temp = t.getsymbol();
@@ -299,8 +323,10 @@ class Map
     //   short tempcolor;
     //   if (here)
     //   {
-    //     // need access to all tile rgb values and the rgb vector needs to be filled with
-    //     // initialized colors..
+    //     if (t.get_back() == COLOR_BROWN) f = COLOR_ORANGE;
+    //     else if (t.get_back() == COLOR_BLUE) f = YELLOW;
+    //     else if (t.get_back() == COLOR_TAN) f = COLOR_RED;
+    //     else f = COLOR_BROWN;
     //     if (!colors[f][t.get_back()])
     //     {
     //       colors[f][t.get_back()] = colorcount;
@@ -317,7 +343,6 @@ class Map
     //     colorcount++;
     //   }
     //   tempcolor = colors[f][t.get_back()];
-    //   t.set_r()
     //   //if(blink) attron(A_BLINK);
     //   attron(COLOR_PAIR(tempcolor));
     //   mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
@@ -327,9 +352,111 @@ class Map
     //   attroff(COLOR_PAIR(tempcolor));
     //   t.setblink(false);
     // }
+    // void render(bool here, Tile &t, bool undo)
+    // {
+    //   if(!undo)
+    //   {
+    //     char temp = t.getsymbol();
+    //     // short back = lookup[t.get_r()][t.get_g()][t.get_b()];
+    //     //defines rgb for background color
+    //     short red = t.get_r();
+    //     short green = t.get_g();
+    //     short blue = t.get_b();
+    //     //outfile << "back: " << back << "\n";
+    //     short f = LIGHT_GREEN;
+    //     short tempcolor;
+    //     if(paircount > 100)
+    //     {
+    //       paircount = 20;
+    //       colorcount = 20;
+    //     }
+    //     // make color for background
+    //     init_color(colorcount, red*3.9, green*3.9, blue*3.9);
+    //     if (here)
+    //     {
+    //       //invert color for cursor
+    //       short r = t.get_r() + 2*(128-t.get_r());
+    //       short g = t.get_g() + 2*(128-t.get_g());
+    //       short b = t.get_b() + 2*(128-t.get_b());
+    //       // if (!lookup[r][g][b])
+    //       // {
+    //       //   lookup[r][g][b] = colorcount;
+    //       //   init_color(colorcount, r*3.9, g*3.9, b*3.9);
+    //       //   colorcount++;
+    //       // }
+    //       f = colorcount+1;
+    //       init_color(f, r*3.9, g*3.9, b*3.9); // make cursor color
+    //       if (!colors[f][colorcount]) // if no pair for fore/back
+    //       {
+    //         colors[f][colorcount] = paircount; //define it in colors
+    //         init_pair(paircount, f, colorcount); //initialize it
+    //         paircount++; //increment paircount
+    //       }
+    //       temp = 'X';
+    //       colorcount++;
+    //     }
+    //     else if (!colors[f][colorcount]) // else if no pair for std cursor
+    //     {
+    //       colors[f][colorcount] = paircount;
+    //       init_pair(paircount, f, colorcount);
+    //       paircount++;
+    //     }
+    //     colorcount++;
+    //     // tempcolor = colors[f][back]; //color to be used
+    //     tempcolor = paircount - 1;
+    //     //if(blink) attron(A_BLINK);
+    //     attron(COLOR_PAIR(tempcolor));
+    //     mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
+    //     mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
+    //     if(!here) mvaddch(t.getpos()->y, t.getpos()->x *2 + 1, ' ');
+    //     //attroff(A_BLINK);
+    //     attroff(COLOR_PAIR(tempcolor));
+    //   }
+    //   else
+    //   {
+    //     mvaddch(t.getpos()->y, t.getpos()->x * 2, ' ');
+    //     mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
+    //   }
+    // }
+
+    void render( bool here, Tile &t )
+    {
+      if(paircount == 117) paircount = 20; //reset paircount
+      if(colorcount > 250) colorcount = 20;
+      char temp = t.getsymbol();
+      short r = t.get_r();
+      short g = t.get_g();
+      short b = t.get_b();
+      short fore = LIGHT_GREEN;
+      if(t.get_tags() == "water") fore = LIGHT_BLUE;
+      else if(t.get_tags() == "mountain") fore = COLOR_BLACK;
+      else if(t.get_tags() == "sand") fore = COLOR_ORANGE;
+      short back = colorcount; //colorcount is at 20;
+      short pair;
+      init_color(back, r*3.9, g*3.9, b*3.9); //initialize background color
+      colorcount++;
+      if(here)
+      {
+        short red = t.get_r() + 2*(128-t.get_r());
+        short green = t.get_g() + 2*(128-t.get_g());
+        short blue = t.get_b() + 2*(128-t.get_b());
+        fore = colorcount;
+        init_color(fore, red*3.9, green*3.9, blue*3.9); //initialize cursor color
+        colorcount++;
+        temp = 'X';
+      }
+      pair = paircount;
+      paircount++;
+      init_pair(pair, fore, back); //initialize pair
+      attron(COLOR_PAIR(pair));
+      mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
+      mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
+      attroff(COLOR_PAIR(pair));
+    }
 
 
-    void blur(double (&type)[ex][why], char t)
+    //gaussian blur to short matrix
+    void blur(short (&type)[ex][why], char t)
     {
       srand( time(NULL) );
       double sum;
@@ -347,10 +474,11 @@ class Map
           sum += type[x+1][y-1]*.0625;
           sum += type[x-1][y+1]*.0625;
           sum += type[x+1][y+1]*.0625;
-          type[x][y] = sum;
-          if (t == 'r') World[x][y]->r_set(sum);
-          else if (t == 'g') World[x][y]->g_set(sum);
-          else if (t == 'b') World[x][y]->b_set(sum);
+          type[x][y] = (int)sum;
+          //outfile << (int)sum << " ";
+          if (t == 'r') World[x][y]->set_r((int)sum);
+          else if (t == 'g') World[x][y]->set_g((int)sum);
+          else if (t == 'b') World[x][y]->set_b((int)sum);
         }
       }
     }
@@ -511,15 +639,28 @@ class Map
     }
     void vision(Coord loc)
     {
-      int startx = loc.x - 2; int starty = loc.y;
+      int startx = loc.x - 7; int starty = loc.y;
       int ct = 0; int limit = 1; int topy = loc.y;
-      for (int x = startx; x < startx + 5; ct++, x++)
+      for (int x = startx; x < startx + 15; ct++, x++)
       {
         for ( int y = starty; y < limit + topy; y++)
         if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
         // make outer most layer more dim than the rest? would look really cool...
-        (ct < 2)? limit+=1:limit-=1;
-        (ct < 2)? starty-=1:starty+=1;
+        (ct < 7)? limit+=1:limit-=1;
+        (ct < 7)? starty-=1:starty+=1;
+      }
+    }
+    void revert(Coord loc)
+    {
+      int startx = loc.x - 3; int starty = loc.y;
+      int ct = 0; int limit = 1; int topy = loc.y;
+      for (int x = startx; x < startx + 7; ct++, x++)
+      {
+        for ( int y = starty; y < limit + topy; y++)
+        if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
+        // make outer most layer more dim than the rest? would look really cool...
+        (ct < 3)? limit+=1:limit-=1;
+        (ct < 3)? starty-=1:starty+=1;
       }
     }
     int getx() { return currentpos.x; }
@@ -527,13 +668,101 @@ class Map
     void move(char in)
     {
       Coord temp = currentpos;
+      short x, y;
+      bool lr;
       //std::cout << pos->getpos()->x << " " << pos->getpos()->y << "\n";
-      if( in == 'a' && currentpos.x > 0 ) currentpos.x -= 1;
-      else if ( in == 'd' && currentpos.x < ex - 1 ) currentpos.x += 1;
-      else if ( in == 'w' && currentpos.y > 0 ) currentpos.y -= 1;
-      else if ( in == 's' && currentpos.y < why - 1 ) currentpos.y += 1;
+      if( in == 'a' && currentpos.x > 0 )
+      {
+        currentpos.x -= 1;
+        y = 1; x = -1;
+        lr = 1;
+      }
+      else if ( in == 'd' && currentpos.x < ex - 1 )
+      {
+        currentpos.x += 1;
+        y = 1; x = 1;
+        lr = 1;
+      }
+      else if ( in == 'w' && currentpos.y > 0 )
+      {
+        currentpos.y -= 1;
+        y = -1; x = 1;
+        lr = 0;
+      }
+      else if ( in == 's' && currentpos.y < why - 1 )
+      {
+        currentpos.y += 1;
+        y = 1; x = 1;
+        lr = 0;
+      }
       if(temp.x != currentpos.x || temp.y != currentpos.y)
       {
+        if(lr)
+        {
+          mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
+          mvaddch(temp.y - y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y + y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
+          mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
+          mvaddch(temp.y + 7 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y + 7 * y, temp.x * 2, ' ');
+        }
+        else
+        {
+          mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
+          mvaddch(temp.y, (temp.x + 7 * x) * 2 + 1, ' ');
+          mvaddch(temp.y, (temp.x + 7 * x) * 2, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2 + 1, ' ');
+          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
+          mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
+        }
         vision(currentpos);
         render(false, *World[temp.x][temp.y]);
         render(true, *World[currentpos.x][currentpos.y]);
