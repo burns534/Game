@@ -650,17 +650,31 @@ class Map
         (ct < 7)? starty-=1:starty+=1;
       }
     }
-    void revert(Coord loc)
+    void revert(Coord loc, short radius)
     {
-      int startx = loc.x - 3; int starty = loc.y;
-      int ct = 0; int limit = 1; int topy = loc.y;
-      for (int x = startx; x < startx + 7; ct++, x++)
+      std::vector< std::vector <bool> > previous(radius*2 + 1, std::vector<bool>(radius*2 + 1));
+      for(int i = 0; i < radius*2; i++)
       {
-        for ( int y = starty; y < limit + topy; y++)
-        if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
-        // make outer most layer more dim than the rest? would look really cool...
-        (ct < 3)? limit+=1:limit-=1;
-        (ct < 3)? starty-=1:starty+=1;
+        for (int k = 0; k < radius*2; k++) previous[i][k] = 0;
+      }
+      short x = 0; short y = 0; short tempx, tempy;
+      for(short t = 0; t < 300; x = rand()%(radius*2+1)-radius, y = rand()%(radius*2+1)-radius)
+      {
+        tempx = x; tempy = y;
+        if (x < 0) x*=-2;
+        if (y < 0) y*=-2;
+        if (previous[x][y])
+        {
+          t++;
+          continue;
+        }
+
+        if (tempx * tempx + tempy * tempy <= radius*radius && loc.x + tempx <= 50 &&
+          loc.x + tempx >= 3 && loc.y + tempy <= 50 && loc.y + tempy >= 3)
+        {
+          render(false, *World[loc.x + tempx][loc.y + tempy]);
+          previous[x][y] = true;
+        }
       }
     }
     int getx() { return currentpos.x; }
@@ -697,73 +711,74 @@ class Map
       }
       if(temp.x != currentpos.x || temp.y != currentpos.y)
       {
-        if(lr)
-        {
-          mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
-          mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
-          mvaddch(temp.y - y, (temp.x - 6 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - y, (temp.x - 6 * x) * 2, ' ');
-          mvaddch(temp.y + y, (temp.x - 6 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + y, (temp.x - 6 * x) * 2, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
-          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
-          mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
-          mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
-          mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
-          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-          mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2, ' ');
-          mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
-          mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
-          mvaddch(temp.y + 7 * y, temp.x * 2 + 1, ' ');
-          mvaddch(temp.y + 7 * y, temp.x * 2, ' ');
-        }
-        else
-        {
-          mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
-          mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
-          mvaddch(temp.y, (temp.x + 7 * x) * 2 + 1, ' ');
-          mvaddch(temp.y, (temp.x + 7 * x) * 2, ' ');
-          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2, ' ');
-          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2 + 1, ' ');
-          mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2, ' ');
-          mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
-          mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
-        }
-        vision(currentpos);
+        // if(lr)
+        // {
+        //   mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
+        //   mvaddch(temp.y - y, (temp.x - 6 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - y, (temp.x - 6 * x) * 2, ' ');
+        //   mvaddch(temp.y + y, (temp.x - 6 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + y, (temp.x - 6 * x) * 2, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
+        //   mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + 2 * y, (temp.x - 5 * x) * 2, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
+        //   mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + 3 * y, (temp.x - 4 * x) * 2, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
+        //   mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + 4 * y, (temp.x - 3 * x) * 2, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
+        //   mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + 5 * y, (temp.x - 2 * x) * 2, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+        //   mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y + 6 * y, (temp.x - 1 * x) * 2, ' ');
+        //   mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
+        //   mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
+        //   mvaddch(temp.y + 7 * y, temp.x * 2 + 1, ' ');
+        //   mvaddch(temp.y + 7 * y, temp.x * 2, ' ');
+        // }
+        // else
+        // {
+        //   mvaddch(temp.y, (temp.x - 7 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y, (temp.x - 7 * x) * 2, ' ');
+        //   mvaddch(temp.y, (temp.x + 7 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y, (temp.x + 7 * x) * 2, ' ');
+        //   mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 1 * y, (temp.x - 6 * x) * 2, ' ');
+        //   mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 1 * y, (temp.x + 6 * x) * 2, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x - 5 * x) * 2, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 2 * y, (temp.x + 5 * x) * 2, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x - 4 * x) * 2, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 3 * y, (temp.x + 4 * x) * 2, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x - 3 * x) * 2, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 4 * y, (temp.x + 3 * x) * 2, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x - 2 * x) * 2, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 5 * y, (temp.x + 2 * x) * 2, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x - 1 * x) * 2, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2 + 1, ' ');
+        //   mvaddch(temp.y - 6 * y, (temp.x + 1 * x) * 2, ' ');
+        //   mvaddch(temp.y - 7 * y, temp.x * 2 + 1, ' ');
+        //   mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
+        // }
+        //vision(currentpos);
+        revert(currentpos, 5);
         render(false, *World[temp.x][temp.y]);
         render(true, *World[currentpos.x][currentpos.y]);
       }
