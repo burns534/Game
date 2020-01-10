@@ -5,6 +5,7 @@
 #include <random>
 #include <vector>
 #include <fstream>
+#include <math.h>
 
 
 #define LIGHT_GREEN 8
@@ -140,15 +141,15 @@ template< int ex , int why >
 class Map
 {
   private:
-    Tile* World[ex][why];
+    Tile* World[ex + 2][why + 2];
     Coord currentpos;
-    double mountains[ex][why];
-    double sand[ex][why];
-    double water[ex][why];
+    double mountains[ex + 2][why + 2];
+    double sand[ex + 2][why + 2];
+    double water[ex + 2][why + 2];
     short colors[256][256];
-    short R[ex][why];
-    short G[ex][why];
-    short B[ex][why];
+    short R[ex + 2][why + 2];
+    short G[ex + 2][why + 2];
+    short B[ex + 2][why + 2];
     int colorcount; //counts how many new colors initialized, for indexing
     int paircount; //counts how many pairs initialized, for indexing
     std::vector< std::vector< std::vector< short> > > lookup; //r,g,b key gives colorpair value
@@ -156,9 +157,9 @@ class Map
   public:
     Map()
     {
-      for (int k = 0; k < why; k++)
+      for (int k = 0; k < why + 2; k++)
       {
-        for(int i = 0; i < ex; i++)
+        for(int i = 0; i < ex + 2; i++)
         {
           water[i][k] = 0;
           sand[i][k] = 0;
@@ -214,13 +215,13 @@ class Map
       outfile << "breakpoint\n";
       colorcount = 20;
       paircount = 20;
-      for (int y = 0; y < why ; y++)
+      for (int y = 0; y < why + 2 ; y++)
       {
-        for (int x = 0; x < ex; x++) World[x][y] = new Tile(x,y);
+        for (int x = 0; x < ex + 2; x++) World[x][y] = new Tile(x,y);
       }
-      for (int y = 0; y < why ; y++)
+      for (int y = 0; y < why + 2 ; y++)
       {
-        for (int x = 0; x < ex; x++)
+        for (int x = 0; x < ex + 2; x++)
         {
           initialize(*(World[x][y])); //adds rgb values to each tile
         }
@@ -258,7 +259,7 @@ class Map
 
       currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
       render(true, *World[currentpos.x][currentpos.y]);
-      vision(*World[currentpos.x][currentpos.y]->getpos());
+      vision(*World[currentpos.x][currentpos.y]->getpos(), 5);
 
       //smooth edges, fill in holes
       // for (int i = 0; i < 3; i ++)
@@ -450,30 +451,46 @@ class Map
       init_pair(pair, fore, back); //initialize pair
       attron(COLOR_PAIR(pair));
       mvaddch(t.getpos()->y, t.getpos()->x * 2, temp);
-      mvaddch(t.getpos()->y, t.getpos()->x * 2 +1, ' ');
+      mvaddch(t.getpos()->y, t.getpos()->x * 2 + 1, ' ');
       attroff(COLOR_PAIR(pair));
     }
 
 
     //gaussian blur to short matrix
-    void blur(short (&type)[ex][why], char t)
+    void blur(short (&type)[ex+2][why+2], char t)
     {
       srand( time(NULL) );
       double sum;
-      for(int y = 1; y < why-2; y ++)
+      for(int y = 0; y < why; y ++)
       {
-        for(int x = 1; x < ex-2; x ++)
+        for(int x = 0; x < ex; x ++)
         {
           sum = 0;
           sum += type[x][y]*.25;
-          sum += type[x-1][y]*.125; // need to make these work for edge conditions
-          sum += type[x+1][y]*.125;
-          sum += type[x][y-1]*.125;
-          sum += type[x][y+1]*.125;
-          sum += type[x-1][y-1]*.0625;
-          sum += type[x+1][y-1]*.0625;
-          sum += type[x-1][y+1]*.0625;
-          sum += type[x+1][y+1]*.0625;
+          if ( y - 1 >= 0) sum += type[x][y-1]*.125;
+          else if (t == 'r') sum += 114*.125; //part of y = 0 edge;
+          else if (t == 'g') sum += 128*.125;
+          else sum += 56 * .125;
+          if ( y + 1 <= why + 1) sum += type[x][y+1]*.125;
+          if (x - 1 >=0)
+          {
+            sum += type[x-1][y]*.125;
+            if (y - 1 >= 0) sum += type[x-1][y-1]*.0625;
+            if (y + 1 <= why + 1) sum += type[x-1][y+1]*.0625;
+          }
+          // for the x = 0 edge with top left corner
+          else if (t == 'r') sum += 114*.125;
+          else if (t == 'g') sum += 128*.25;
+          else sum += 56 * .125;
+          if(x + 1 <= ex + 1)
+          {
+            if (y - 1 >= 0) sum += type[x+1][y-1]*.0625; // last y = 0 blue
+            else if (t == 'r') sum += 114 * .0625;
+            else if (t == 'g') sum += 128 * .0625;
+            else sum += 56 * .0625;
+            sum += type[x+1][y]*.125;
+            if (y + 1 <= ex + 1) sum += type[x+1][y+1]*.0625;
+          }
           type[x][y] = (int)sum;
           //outfile << (int)sum << " ";
           if (t == 'r') World[x][y]->set_r((int)sum);
@@ -637,43 +654,35 @@ class Map
         }
       }
     }
-    void vision(Coord loc)
+    // void vision(Coord loc)
+    // {
+    //   int startx = loc.x - 7; int starty = loc.y;
+    //   int ct = 0; int limit = 1; int topy = loc.y;
+    //   for (int x = startx; x < startx + 15; ct++, x++)
+    //   {
+    //     for ( int y = starty; y < limit + topy; y++)
+    //     if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
+    //     // make outer most layer more dim than the rest? would look really cool...
+    //     (ct < 7)? limit+=1:limit-=1;
+    //     (ct < 7)? starty-=1:starty+=1;
+    //   }
+    // }
+    void vision(Coord loc, short radius)
     {
-      int startx = loc.x - 7; int starty = loc.y;
-      int ct = 0; int limit = 1; int topy = loc.y;
-      for (int x = startx; x < startx + 15; ct++, x++)
+      short x = loc.x - radius; short y = loc.y;
+      register int start;
+      register int stop;
+      for (; x <= loc.x + radius; x++)
       {
-        for ( int y = starty; y < limit + topy; y++)
-        if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
-        // make outer most layer more dim than the rest? would look really cool...
-        (ct < 7)? limit+=1:limit-=1;
-        (ct < 7)? starty-=1:starty+=1;
-      }
-    }
-    void revert(Coord loc, short radius)
-    {
-      std::vector< std::vector <bool> > previous(radius*2 + 1, std::vector<bool>(radius*2 + 1));
-      for(int i = 0; i < radius*2; i++)
-      {
-        for (int k = 0; k < radius*2; k++) previous[i][k] = 0;
-      }
-      short x = 0; short y = 0; short tempx, tempy;
-      for(short t = 0; t < 300; x = rand()%(radius*2+1)-radius, y = rand()%(radius*2+1)-radius)
-      {
-        tempx = x; tempy = y;
-        if (x < 0) x*=-2;
-        if (y < 0) y*=-2;
-        if (previous[x][y])
+        start = -(int)sqrt(radius*radius - (loc.x-x)*(loc.x-x));
+        stop = (int)sqrt(radius*radius - (loc.x-x)*(loc.x-x));
+        outfile << "radius, x: " << radius << ", " << loc.x-x<< "\n";
+        outfile << "start,stop: " << start << ", " << stop << "\n";
+        // render(false, *World[x][y])
+        for (y = start + loc.y; y < stop + loc.y+1; y ++)
         {
-          t++;
-          continue;
-        }
-
-        if (tempx * tempx + tempy * tempy <= radius*radius && loc.x + tempx <= 50 &&
-          loc.x + tempx >= 3 && loc.y + tempy <= 50 && loc.y + tempy >= 3)
-        {
-          render(false, *World[loc.x + tempx][loc.y + tempy]);
-          previous[x][y] = true;
+          if(x <= 118 && y <= 72 && x >= 0 && y >= 0)
+          render(false, *World[x][y]);
         }
       }
     }
@@ -778,7 +787,7 @@ class Map
         //   mvaddch(temp.y - 7 * y, temp.x * 2, ' ');
         // }
         //vision(currentpos);
-        revert(currentpos, 5);
+        vision(currentpos, 5);
         render(false, *World[temp.x][temp.y]);
         render(true, *World[currentpos.x][currentpos.y]);
       }
