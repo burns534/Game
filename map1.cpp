@@ -7,7 +7,6 @@
 #include <fstream>
 #include <math.h>
 
-
 #define LIGHT_GREEN 8
 #define LIGHT_BLUE 9
 #define COLOR_BROWN 10
@@ -19,7 +18,7 @@
 #define GREEN3 16
 #define GREEN4 17
 #define GREEN5 18
-#define DEFAULT 0
+#define DEFAULT 255
 
 
 std::ofstream outfile;
@@ -101,7 +100,7 @@ class Tile
       green[2] = GREEN3;
       green[3] = GREEN4;
       green[4] = GREEN5;
-      foreground = GREEN2;
+      foreground = GREEN3;
       background = green[d->r() % 5];
       short pairid = 0;
 
@@ -187,8 +186,10 @@ class Map
         exit(1);
       }
       clear();
+      init_pair(DEFAULT, COLOR_BLACK, COLOR_BLACK);
+      wbkgd(stdscr, COLOR_PAIR(DEFAULT));
       init_color(LIGHT_GREEN, 700, 850, 149);
-      init_color(LIGHT_BLUE, 359, 846, 1000);
+      init_color(LIGHT_BLUE, 50*3.9, 160*3.9, 255*3.9);
       init_color(COLOR_BROWN, 121*3.9, 80*3.9, 54*3.9);
       init_color(COLOR_TAN, 220*3.9, 200*3.9, 160*3.9);
       init_color(COLOR_ORANGE, 255*3.9, 150*3.9, 0);
@@ -198,10 +199,13 @@ class Map
       init_color(GREEN3, 90*3.9, 110*3.9, 40*3.9);
       init_color(GREEN4, 40*3.9, 80*3.9, 15*3.9);
       init_color(GREEN5, 60*3.9, 150*3.9, 40*3.9);
-      init_pair(DEFAULT, COLOR_BLACK, -1);
+      init_color(6, 0, 0, 0);
 
+      indexing[COLOR_GREEN] = new RGB(0, 255, 0);
+      indexing[6] = new RGB(0, 0, 0);
+      indexing[COLOR_BLUE] = new RGB(0, 83, 233);
       indexing[LIGHT_GREEN] = new RGB(180, 223, 38);
-      indexing[LIGHT_BLUE] = new RGB(95, 217, 255);
+      indexing[LIGHT_BLUE] = new RGB(50, 160, 255);
       indexing[COLOR_BROWN] = new RGB(121, 80, 54);
       indexing[COLOR_TAN] = new RGB(220, 200, 160);
       indexing[COLOR_ORANGE] = new RGB(255, 150, 0);
@@ -228,47 +232,31 @@ class Map
       }
       outfile << "breakpointhere\n";
 
-      //gassian blur to the map
-
-      // no longer necessary
-      // for (int y = 0; y < why ; y++)
-      // {
-      //   for (int x = 0; x < ex; x++)
-      //   {
-      //     initlookup(*(World[x][y])); //initializes new colors for each tile
-      //   }
-      // }
-
-      //generate terrain
+      //gaussian blur
       blur(R, 'r');
       blur(G, 'g');
       blur(B, 'b');
       blur(R, 'r');
-      //blur(G, 'g');
-      blur(B, 'b');
+      blur(B, 'b'); //blurring green looks bad
 
+      //generate terrain
       for (int i = 0; i < 3; i++)
       terrain("water", '~', LIGHT_BLUE, COLOR_BLUE, 1.5);
       for (int i = 0; i < 2; i++)
-      terrain("mountain", '^', COLOR_BLACK, COLOR_BROWN, .6);
+      terrain("mountain", '#', 6, COLOR_BROWN, .5);
       for (int i = 0; i < 2; i++)
       terrain("sand", '*', COLOR_BROWN, COLOR_TAN, .8);
 
-
-
-
-      currentpos.x = rand() % 30 + 10; currentpos.y = rand() % 30 + 10;
-      render(true, *World[currentpos.x][currentpos.y]);
-      vision(*World[currentpos.x][currentpos.y]->getpos(), 6);
-
       //smooth edges, fill in holes
-      // for (int i = 0; i < 3; i ++)
-      // blur(water, "water", LIGHT_BLUE, COLOR_BLUE);
-      // for (int i = 0; i < 20; i++)
-      // {
-      // blur(mountains, "mountain", COLOR_BLACK, COLOR_BROWN);
-      // blur(sand, "sand", COLOR_BROWN, COLOR_TAN);
-      // }
+      for (int i = 0; i < 20; i++)
+      {
+      blur(mountains, "mountain", COLOR_BLACK, COLOR_BROWN);
+      blur(sand, "sand", COLOR_BROWN, COLOR_TAN);
+      }
+      for (int i = 0; i < 3; i ++)
+      blur(water, "water", LIGHT_BLUE, COLOR_BLUE);
+      currentpos.x = rand() % (ex - 20) + 10; currentpos.y = rand() % (why-20) + 10;
+      vision(*World[currentpos.x][currentpos.y]->getpos(), 6);
 
       /* NEED RIVER FUNCTION or option for terrain */
 
@@ -306,27 +294,26 @@ class Map
       B[posx][posy] = t.get_b();
     }
 
-    void render( bool here, Tile &t )
+    void render( bool here, Tile &t, double f )
     {
-      if(paircount == 117) paircount = 20; //reset paircount
-      if(colorcount > 250) colorcount = 20;
+      if(paircount == 128) paircount = 5; //reset paircount
+      if(colorcount > 254) colorcount = 19;
       char temp = t.getsymbol();
-      short r = t.get_r();
-      short g = t.get_g();
-      short b = t.get_b();
-      short fore = LIGHT_GREEN;
-      if(t.get_tags() == "water") fore = LIGHT_BLUE;
-      else if(t.get_tags() == "mountain") fore = COLOR_BLACK;
-      else if(t.get_tags() == "sand") fore = COLOR_ORANGE;
-      short back = colorcount; //colorcount is at 20;
+      outfile << "before, after: " << t.get_r() << ", " << t.get_r() * f << "\n";
+      float r = t.get_r() * f;
+      float g = t.get_g() * f;
+      float b = t.get_b() * f;
+      short fore = t.get_fore(); // tile should know its symbol color
+      // going to add noise to foreground color
+      short back = colorcount;
       short pair;
       init_color(back, r*3.9, g*3.9, b*3.9); //initialize background color
       colorcount++;
       if(here)
       {
-        short red = t.get_r() + 2*(128-t.get_r());
-        short green = t.get_g() + 2*(128-t.get_g());
-        short blue = t.get_b() + 2*(128-t.get_b());
+        float red = r + 2*(128-r); //makes it a little redder so it stands out
+        float green = 255 * (g + 2*(128-g) - 50)/255;
+        float blue = 255 * (b + 2*(128-b) - 50)/255;
         fore = colorcount;
         init_color(fore, red*3.9, green*3.9, blue*3.9); //initialize cursor color
         colorcount++;
@@ -340,7 +327,6 @@ class Map
       mvaddch(t.getpos()->y, t.getpos()->x * 2 + 1, ' ');
       attroff(COLOR_PAIR(pair));
     }
-
 
     //gaussian blur to short matrix
     void blur(short (&type)[ex+2][why+2], char t)
@@ -370,7 +356,7 @@ class Map
           else sum += 56 * .125;
           if(x + 1 <= ex + 1)
           {
-            if (y - 1 >= 0) sum += type[x+1][y-1]*.0625; // last y = 0 blue
+            if (y - 1 >= 0) sum += type[x+1][y-1]*.0625; // last y = 0
             else if (t == 'r') sum += 114 * .0625;
             else if (t == 'g') sum += 128 * .0625;
             else sum += 56 * .0625;
@@ -387,12 +373,20 @@ class Map
     }
 
     void gen(std::string tag, Coord &loc, int count, short &stop, char texture,
-      short colorfore, short colorback, bool &failbit, float step)
+      short fore, short back, bool &failbit, float step)
     {
       Coord temp = loc;
       short ct;
       double prob;
       failbit = false;
+      bool w = false;
+      if(tag.compare("mountain") == 0) mountains[temp.x][temp.y] = 1;
+      else if (tag.compare("water") == 0)
+      {
+        water[temp.x][temp.y] = 1;
+        w = true;
+      }
+      else if (tag.compare("sand") == 0) sand[temp.x][temp.y] = 1;
       if (temp.x < 1 || temp.x > ex-2 || temp.y < 1 || temp.y > why-2)
       {
         failbit = true; return; //prevent segfault
@@ -438,26 +432,19 @@ class Map
       {
         World[temp.x][temp.y]->set_terrain(1);
         World[temp.x][temp.y]->set_tag(tag);
-        World[temp.x][temp.y]->set_fore(colorfore);
-        World[temp.x][temp.y]->set_back(colorback);
+        World[temp.x][temp.y]->set_fore(fore);
+        //World[temp.x][temp.y]->set_back(back);
+        World[temp.x][temp.y]->set_r(noise(false, indexing[back]->r, 20));
+        World[temp.x][temp.y]->set_g(noise(w, indexing[back]->g, 10));
+        World[temp.x][temp.y]->set_b(noise(w, indexing[back]->b, 20));
+        //initialize(*World[temp.x][temp.y]);
         World[temp.x][temp.y]->setsymbol(texture);
         loc = temp;
       }
       else
       {
-        stop++;
+        stop++; //closer to termination
       }
-      if(tag.compare("mountain") == 0) mountains[temp.x][temp.y] = 1;
-      else if (tag.compare("water") == 0)
-      {
-        water[temp.x][temp.y] = 1;
-        //outfile << "it happened: " << water[temp.x][temp.y] << "\n";
-      }
-      else if (tag.compare("sand") == 0) sand[temp.x][temp.y] = 1;
-      // if(World[temp.x+1][temp.y]->get_tags().compare(World[temp.x][temp.y]->get_tags()) == 0)
-      // if(World[temp.x-1][temp.y]->get_tags().compare(World[temp.x][temp.y]->get_tags()) == 0)
-      // if(World[temp.x][temp.y+1]->get_tags().compare(World[temp.x][temp.y]->get_tags()) == 0)
-      // if(World[temp.x][temp.y-1]->get_tags().compare(World[temp.x][temp.y]->get_tags()) == 0)
     }
     void getwater()
     {
@@ -467,7 +454,7 @@ class Map
       }
     }
 
-    void terrain(const char* name, char texture, short colorfore, short colorback, float step)
+    void terrain(const char* name, char texture, short fore, short back, float step)
     {
       Coord temp;
       std::string t = name;
@@ -475,7 +462,7 @@ class Map
       int count = 0; bool failbit;
       for(short stop = 0; stop < 4; count++)
       {
-        gen(t, temp, count, stop, texture, colorfore, colorback, failbit, step);
+        gen(t, temp, count, stop, texture, fore, back, failbit, step);
         if(failbit)
         {
           temp.x = rand() % (ex-2);
@@ -484,15 +471,28 @@ class Map
         }
       }
     }
+    short noise(bool water, short value, unsigned amount)
+    {
+      if(water) amount *= 4;
+      short temp = value + (rand()%3 - 1) * (rand() % amount);
+      (temp > 255) ? temp -= 2*(temp - value): 0;
+      (temp < 0) ? temp -= 2*(temp - value): 0;
+      return temp;
+    }
 
-    void blur(double (&type)[ex][why], const char* tag, short fore, short back)
+    void blur(double (&type)[ex+2][why+2], const char* tag, short fore, short back)
     {
       srand( time(NULL) );
       double sum;
       std::string t = tag;
       char temp;
-      if (t.compare("water") == 0) temp = '~';
-      else if (t == "mountain") temp = '^';
+      bool w = false;
+      if (t.compare("water") == 0)
+      {
+        temp = '~';
+        w = true;
+      }
+      else if (t == "mountain") temp = '#';
       else if (t.compare("sand") == 0) temp = '*';
       for(int y = 1; y < why-2; y ++)
       {
@@ -521,13 +521,21 @@ class Map
               World[x+randx][y+randy]->set_terrain(1);
               World[x+randx][y+randy]->setsymbol(temp);
               World[x+randx][y+randy]->set_fore(fore);
-              World[x+randx][y+randy]->set_back(back);
+              World[x+randx][y+randy]->set_r(noise(false, indexing[back]->r, 20));
+              World[x+randx][y+randy]->set_g(noise(w, indexing[back]->g, 10));
+              World[x+randx][y+randy]->set_b(noise(w, indexing[back]->b, 20));
+              //World[x+randx][y+randy]->set_back(back);
+              //initialize(*World[x+randx][y+randy]);
             }
               World[x][y]->set_tag(tag);
               World[x][y]->set_terrain(1);
               World[x][y]->setsymbol(temp);
               World[x][y]->set_fore(fore);
-              World[x][y]->set_back(back);
+              World[x][y]->set_r(noise(false, indexing[back]->r, 20));
+              World[x][y]->set_g(noise(w, indexing[back]->g, 10));
+              World[x][y]->set_b(noise(w, indexing[back]->b, 20));
+              //World[x][y]->set_back(back);
+              //initialize(*World[x][y]);
               //type[x][y] = sum;
           }
           else
@@ -540,33 +548,12 @@ class Map
         }
       }
     }
-    // void vision(Coord loc)
-    // {
-    //   int startx = loc.x - 7; int starty = loc.y;
-    //   int ct = 0; int limit = 1; int topy = loc.y;
-    //   for (int x = startx; x < startx + 15; ct++, x++)
-    //   {
-    //     for ( int y = starty; y < limit + topy; y++)
-    //     if (0 <= x && x < ex && 0 <= y && y < why) render(false, *World[x][y]);
-    //     // make outer most layer more dim than the rest? would look really cool...
-    //     (ct < 7)? limit+=1:limit-=1;
-    //     (ct < 7)? starty-=1:starty+=1;
-    //   }
-    // }
+
     void vision(Coord loc, short radius)
     {
       short x = loc.x - radius; short y = loc.y;
       register int start;
       register int stop;
-      render(false, *World[loc.x+1][loc.y + 6]);
-      render(false, *World[loc.x-1][loc.y + 6]);
-      render(false, *World[loc.x+1][loc.y - 6]);
-      render(false, *World[loc.x-1][loc.y - 6]);
-      render(false, *World[loc.x - 6][loc.y - 1]);
-      render(false, *World[loc.x - 6][loc.y + 1]);
-      render(false, *World[loc.x + 6][loc.y - 1]);
-      render(false, *World[loc.x + 6][loc.y + 1]);
-
       for (; x <= loc.x + radius; x++)
       {
         start = -(int)sqrt(radius*radius - (loc.x-x)*(loc.x-x));
@@ -575,10 +562,30 @@ class Map
         // outfile << "start,stop: " << start << ", " << stop << "\n";
         for (y = start + loc.y; y < stop + loc.y+1; y ++)
         {
-          if(x <= 118 && y <= 72 && x >= 0 && y >= 0)
-          render(false, *World[x][y]);
+          if(x < ex && y < why && x >= 0 && y >= 0)
+          {
+            float factor = (1 - .5*(pow((loc.x - x)*(loc.x - x) + (loc.y - y)*(loc.y - y),.6) + .5)/radius);
+            if (x == loc.x && y == loc.y) render(true, *World[x][y], factor);
+            else render(false, *World[x][y], factor);
+          }
         }
       }
+      if(loc.x + 1 < ex && loc.y + 6 < why)
+      render(false, *World[loc.x+1][loc.y + 6], .2);
+      if(loc.x - 1 >= 0 && loc.y + 6 < why)
+      render(false, *World[loc.x-1][loc.y + 6], .2);
+      if(loc.x + 1 < ex && loc.y - 6 >= 0)
+      render(false, *World[loc.x+1][loc.y - 6], .2);
+      if(loc.x - 1 >= 0 && loc.y - 6 >= 0)
+      render(false, *World[loc.x-1][loc.y - 6], .2);
+      if(loc.x - 6 >= 0 && loc.y - 1 >= 0)
+      render(false, *World[loc.x - 6][loc.y - 1], .2);
+      if(loc.x - 6 >= 0 && loc.y + 1 < why)
+      render(false, *World[loc.x - 6][loc.y + 1], .2);
+      if(loc.x + 6 < ex && loc.y - 1 >= 0)
+      render(false, *World[loc.x + 6][loc.y - 1], .2);
+      if(loc.x + 6 < ex && loc.y + 1 < why)
+      render(false, *World[loc.x + 6][loc.y + 1], .2);
     }
     int getx() { return currentpos.x; }
     int gety() { return currentpos.y; }
@@ -612,8 +619,10 @@ class Map
         y = 1; x = 1;
         lr = 0;
       }
+      // if we moved
       if(temp.x != currentpos.x || temp.y != currentpos.y)
       {
+        // possible segmentation fault issue
         if(lr)
         {
           mvaddch(temp.y, (temp.x - 6 * x) * 2 + 1, ' ');
@@ -681,8 +690,8 @@ class Map
           mvaddch(temp.y - 6 * y, temp.x * 2, ' ');
         }
         vision(currentpos, 6);
-        render(false, *World[temp.x][temp.y]);
-        render(true, *World[currentpos.x][currentpos.y]);
+        // render(false, *World[temp.x][temp.y], 1);
+        // render(true, *World[currentpos.x][currentpos.y], 1);
       }
     }
     void debug()
@@ -690,9 +699,8 @@ class Map
       outfile << "DEBUG\n";
       for(int i = 0; i < why; i++)
       {
-        for(int k = 0; k < ex; k++) render(false, *World[k][i]);
+        for(int k = 0; k < ex; k++) render(false, *World[k][i], 1);
       }
     }
-
 
 };
