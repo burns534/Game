@@ -1,9 +1,8 @@
 #include "Color.h"
 
 struct ColorPair {
-    Color *first_color;
-    Color *second_color;
+    Color foreground, background;
     short tag;
-    ColorPair(Color *first, Color *second, short tag);
-    ~ColorPair();
+    ColorPair();
+    ColorPair(Color foreground, Color background, short tag);
 };

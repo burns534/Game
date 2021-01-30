@@ -1,12 +1,9 @@
 #include "ColorPair.h"
 
-ColorPair::ColorPair(Color *first, Color *second, short tag) {
-    this->first_color = first;
-    this->second_color = second;
-    this->tag = tag;
-}
+ColorPair::ColorPair() {}
 
-ColorPair::~ColorPair() {
-    delete first_color;
-    delete second_color;
+ColorPair::ColorPair(Color foreground, Color background, short tag) {
+    this->foreground = foreground;
+    this->background = background;
+    this->tag = tag;
 }
