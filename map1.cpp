@@ -82,7 +82,6 @@ private:
     std::vector< std::vector< std::vector< short> > > lookup; //r,g,b key gives colorpair value
     std::map<int, RGB*> indexing; //native color key gives pointer to rgb struct
 public:
-// before I knew the graphics way to do 2d arrays
     Map() {
       for (int k = 0; k < height + 2; k++) {
         for(int i = 0; i < width + 2; i++) {
@@ -222,8 +221,7 @@ public:
       B[posx][posy] = t.get_b();
     }
 
-    void render(bool here, Tile &t, double f )
-    {
+    void render(bool here, Tile &t, double f ) {
       if(paircount == 128) paircount = 5; //reset paircount
       if(colorcount > 254) colorcount = 19;
       char temp = t.getsymbol();
