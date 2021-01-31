@@ -16,51 +16,6 @@ void Map::configure_window() {
         error("Error initializing screen");
     }
     /*
-        The start_color routine requires no arguments.  It must be called if the programmer wants to use col-
-        ors, and before any other color manipulation routine is called.  It is good  practice  to  call  this
-        routine right after initscr.  start_color does this:
-
-        o   It  initializes  two  global variables, COLORS and COLOR_PAIRS (respectively defining the maximum
-            number of colors and color-pairs the terminal can support).
-
-        o   It initializes the special color pair 0 to the default foreground and background colors.  No oth-
-            er color pairs are initialized.
-
-        o   It  restores  the colors on the terminal to the values they had when the terminal was just turned
-            on.
-
-        o   If the terminal supports the initc (initialize_color) capability, start_color initializes its in-
-            ternal table representing the red, green and blue components of the color palette.
-
-            The  components  depend  on  whether  the  terminal  uses  CGA (aka "ANSI") or HLS (i.e., the hls
-            (hue_lightness_saturation) capability is set).  The table is initialized first  for  eight  basic
-            colors (black, red, green, yellow, blue, magenta, cyan, and white), and after that (if the termi-
-            nal supports more than eight colors) the components are initialized to 1000.
-
-            start_color does not attempt to set the terminal's color palette to match its built-in table.  An
-            application may use init_color to alter the internal table along with the terminal's color.
-
-        These  limits  apply to color values and color pairs.  Values outside these limits are not legal, and
-        may result in a runtime error:
-
-        o   COLORS corresponds to the terminal database's max_colors capability, (see terminfo(5)).
-
-        o   color values are expected to be in the range 0 to COLORS-1, inclusive (including 0 and COLORS-1).
-
-        o   a  special  color value -1 is used in certain extended functions to denote the default color (see
-            use_default_colors).
-
-        o   COLOR_PAIRS corresponds to the terminal database's max_pairs capability, (see terminfo(5)).
-
-        o   legal color pair values are in the range 1 to COLOR_PAIRS-1, inclusive.
-
-        o   color pair 0 is special; it denotes "no color".
-
-            Color pair 0 is assumed to be white on black, but is actually whatever  the  terminal  implements
-            before color is initialized.  It cannot be modified by the application.
-    */
-    start_color();
-    /*
         The keypad option enables the keypad of the user's terminal.  If enabled (bf is TRUE), the  user  can
         press  a  function  key (such as an arrow key) and wgetch(3X) returns a single value representing the
         function key, as in KEY_LEFT.  If disabled (bf is FALSE), curses does not treat  function  keys  spe-
@@ -95,5 +50,9 @@ void Map::configure_window() {
     }
 
     clear(); // clears screen
+}
+
+void Map::deconfigure() {
+    endwin();
 }
 

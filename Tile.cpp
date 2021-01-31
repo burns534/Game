@@ -1,6 +1,11 @@
 #include "Tile.h"
 
-Tile::Tile(Point *position, Color *background_color, Color *foreground_color, TileType type = DEFAULT, bool is_passable = true) {
+Tile::Tile() {
+    this->is_passable = true;
+    this->type = DEFAULT;
+}
+
+Tile::Tile(Point position, std::string background_color, std::string foreground_color, TileType type, bool is_passable) {
     this->position = position;
     this->background_color = background_color;
     this->foreground_color = foreground_color;
@@ -8,8 +13,4 @@ Tile::Tile(Point *position, Color *background_color, Color *foreground_color, Ti
     this->type = type;
 }
 
-Tile::~Tile() {
-    delete position;
-    delete background_color;
-    delete foreground_color;
-}
+Tile::~Tile() {}

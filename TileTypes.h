@@ -1,3 +1,5 @@
+#ifndef TileTypes_h
+#define TileTypes_h
 
 enum TileType {
     DEFAULT,
@@ -8,3 +10,5 @@ enum TileType {
     ROCK,
     PLAYER
 };
+
+#endif

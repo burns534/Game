@@ -191,7 +191,7 @@ public:
 
     ~Map()
     {
-      endwin(); widthit(1); outfile.close();
+      endwin(); exit(1); outfile.close(); // this never gets called
       delete indexing[LIGHT_GREEN];
       delete indexing[LIGHT_BLUE];
       delete indexing[COLOR_BROWN];

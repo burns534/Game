@@ -1,14 +1,15 @@
-#include "Point.h"
+#ifndef Tile_h
+#define Tile_h
 #include "TileTypes.h"
-#include "Color.h"
-#include <string>
+#include "ViewNode.h"
 
-struct Tile {
-    Point *position;
+struct Tile: public ViewNode {
     TileType type;
-    Color *background_color, *foreground_color;
     bool is_passable;
 
-    Tile(Point *position, Color *background_color, Color *foreground_color, TileType type = DEFAULT, bool is_passable = true);
+    Tile();
+    Tile(Point position, std::string background_color, std::string foreground_color, TileType type = DEFAULT, bool is_passable = true);
     ~Tile();
 };
+
+#endif
