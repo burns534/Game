@@ -7,7 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		27695F9125C70491008261E0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695F9025C70491008261E0 /* main.cpp */; };
+		27695FAE25C70556008261E0 /* Color.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695F9925C70555008261E0 /* Color.cpp */; };
+		27695FAF25C70556008261E0 /* Tile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695F9A25C70555008261E0 /* Tile.cpp */; };
+		27695FB025C70556008261E0 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695F9B25C70555008261E0 /* Node.cpp */; };
+		27695FB125C70556008261E0 /* map-rewrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695F9F25C70555008261E0 /* map-rewrite.cpp */; };
+		27695FB225C70556008261E0 /* ColorPair.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FA025C70556008261E0 /* ColorPair.cpp */; };
+		27695FB325C70556008261E0 /* ViewNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FA525C70556008261E0 /* ViewNode.cpp */; };
+		27695FB425C70556008261E0 /* Point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FAB25C70556008261E0 /* Point.cpp */; };
+		27695FB525C70556008261E0 /* ColorManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FAC25C70556008261E0 /* ColorManager.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +31,27 @@
 
 /* Begin PBXFileReference section */
 		27695F8D25C70491008261E0 /* Game */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Game; sourceTree = BUILT_PRODUCTS_DIR; };
-		27695F9025C70491008261E0 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		27695F9925C70555008261E0 /* Color.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Color.cpp; sourceTree = "<group>"; };
+		27695F9A25C70555008261E0 /* Tile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tile.cpp; sourceTree = "<group>"; };
+		27695F9B25C70555008261E0 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
+		27695F9C25C70555008261E0 /* ColorPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPair.h; sourceTree = "<group>"; };
+		27695F9D25C70555008261E0 /* map1_backup.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map1_backup.txt; sourceTree = "<group>"; };
+		27695F9E25C70555008261E0 /* Tile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tile.h; sourceTree = "<group>"; };
+		27695F9F25C70555008261E0 /* map-rewrite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "map-rewrite.cpp"; sourceTree = "<group>"; };
+		27695FA025C70556008261E0 /* ColorPair.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorPair.cpp; sourceTree = "<group>"; };
+		27695FA125C70556008261E0 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		27695FA225C70556008261E0 /* TileTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TileTypes.h; sourceTree = "<group>"; };
+		27695FA325C70556008261E0 /* Node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Node.h; sourceTree = "<group>"; };
+		27695FA425C70556008261E0 /* map-rewrite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "map-rewrite.h"; sourceTree = "<group>"; };
+		27695FA525C70556008261E0 /* ViewNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ViewNode.cpp; sourceTree = "<group>"; };
+		27695FA625C70556008261E0 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
+		27695FA725C70556008261E0 /* ViewNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewNode.h; sourceTree = "<group>"; };
+		27695FA825C70556008261E0 /* map.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map.txt; sourceTree = "<group>"; };
+		27695FA925C70556008261E0 /* ColorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorManager.h; sourceTree = "<group>"; };
+		27695FAA25C70556008261E0 /* Point.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Point.h; sourceTree = "<group>"; };
+		27695FAB25C70556008261E0 /* Point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Point.cpp; sourceTree = "<group>"; };
+		27695FAC25C70556008261E0 /* ColorManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorManager.cpp; sourceTree = "<group>"; };
+		27695FAD25C70556008261E0 /* map1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map1.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +84,27 @@
 		27695F8F25C70491008261E0 /* Game */ = {
 			isa = PBXGroup;
 			children = (
-				27695F9025C70491008261E0 /* main.cpp */,
+				27695F9925C70555008261E0 /* Color.cpp */,
+				27695FA625C70556008261E0 /* Color.h */,
+				27695FAC25C70556008261E0 /* ColorManager.cpp */,
+				27695FA925C70556008261E0 /* ColorManager.h */,
+				27695FA025C70556008261E0 /* ColorPair.cpp */,
+				27695F9C25C70555008261E0 /* ColorPair.h */,
+				27695F9F25C70555008261E0 /* map-rewrite.cpp */,
+				27695FA425C70556008261E0 /* map-rewrite.h */,
+				27695FA825C70556008261E0 /* map.txt */,
+				27695F9D25C70555008261E0 /* map1_backup.txt */,
+				27695FAD25C70556008261E0 /* map1.txt */,
+				27695F9B25C70555008261E0 /* Node.cpp */,
+				27695FA325C70556008261E0 /* Node.h */,
+				27695FAB25C70556008261E0 /* Point.cpp */,
+				27695FAA25C70556008261E0 /* Point.h */,
+				27695FA125C70556008261E0 /* README.md */,
+				27695F9A25C70555008261E0 /* Tile.cpp */,
+				27695F9E25C70555008261E0 /* Tile.h */,
+				27695FA225C70556008261E0 /* TileTypes.h */,
+				27695FA525C70556008261E0 /* ViewNode.cpp */,
+				27695FA725C70556008261E0 /* ViewNode.h */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -118,7 +165,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27695F9125C70491008261E0 /* main.cpp in Sources */,
+				27695FB025C70556008261E0 /* Node.cpp in Sources */,
+				27695FB225C70556008261E0 /* ColorPair.cpp in Sources */,
+				27695FB125C70556008261E0 /* map-rewrite.cpp in Sources */,
+				27695FB525C70556008261E0 /* ColorManager.cpp in Sources */,
+				27695FAE25C70556008261E0 /* Color.cpp in Sources */,
+				27695FB325C70556008261E0 /* ViewNode.cpp in Sources */,
+				27695FB425C70556008261E0 /* Point.cpp in Sources */,
+				27695FAF25C70556008261E0 /* Tile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
