@@ -13,9 +13,11 @@
 
 class Map: public Node {
     std::vector<Tile *> world;
+    WINDOW *game_window;
 public:
     Map(int width, int height);
     void configure_window();
+    void configure_colors();
     void deconfigure();
     // variables
     int width, height;

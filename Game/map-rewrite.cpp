@@ -16,6 +16,20 @@ void Map::configure_window() {
         error("Error initializing screen");
     }
     /*
+     Calling newwin creates and returns a pointer to a new window  with  the
+            given  number  of lines and columns.  The upper left-hand corner of the
+            window is at
+                   line begin_y,
+                   column begin_x
+
+            If either nlines or ncols is zero, they default to
+                   LINES - begin_y and
+                   COLS - begin_x.
+
+            A new full-screen window is created by calling newwin(0,0,0,0).
+     */
+    game_window = newwin(height, width, 0, 0);
+    /*
         The keypad option enables the keypad of the user's terminal.  If enabled (bf is TRUE), the  user  can
         press  a  function  key (such as an arrow key) and wgetch(3X) returns a single value representing the
         function key, as in KEY_LEFT.  If disabled (bf is FALSE), curses does not treat  function  keys  spe-
@@ -23,7 +37,7 @@ void Map::configure_window() {
         can be turned on (made to transmit) and off (made to work locally), turning on this option causes the
         terminal keypad to be turned on when wgetch(3X) is called.  The default value for keypad is FALSE.
     */
-   keypad(stdscr, TRUE);
+    keypad(stdscr, TRUE);
    /*
         Normally,  the  tty driver buffers typed characters until a newline or carriage return is typed.  The
         cbreak routine disables line buffering and erase/kill character-processing (interrupt and  flow  con-
@@ -50,9 +64,26 @@ void Map::configure_window() {
     }
 
     clear(); // clears screen
+    
+    wbkgd(game_window, 0); // set background to white
+}
+
+void Map::configure_colors() {
+    ColorManager::shared()->create_color("light-green", 180, 215, 40);
+    ColorManager::shared()->create_color("light-blue", 50, 160, 255);
+    ColorManager::shared()->create_color("brown", 121, 80, 54);
+    ColorManager::shared()->create_color("tan", 220, 200, 160);
+    ColorManager::shared()->create_color("orange", 255, 150, 0);
+    ColorManager::shared()->create_color("yellow", 255, 255, 30);
+    ColorManager::shared()->create_color("green1", 190, 200, 110);
+    ColorManager::shared()->create_color("green2", 190, 215, 170);
+    ColorManager::shared()->create_color("green3", 90, 110, 40);
+    ColorManager::shared()->create_color("green4", 40, 80, 15);
+    ColorManager::shared()->create_color("green5", 60, 150, 40);
 }
 
 void Map::deconfigure() {
-    endwin();
+    delwin(game_window);
+    endwin(); // unable to close actual terminal that was opened
 }
 

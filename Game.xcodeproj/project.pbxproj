@@ -15,6 +15,8 @@
 		27695FB325C70556008261E0 /* ViewNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FA525C70556008261E0 /* ViewNode.cpp */; };
 		27695FB425C70556008261E0 /* Point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FAB25C70556008261E0 /* Point.cpp */; };
 		27695FB525C70556008261E0 /* ColorManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FAC25C70556008261E0 /* ColorManager.cpp */; };
+		27695FBF25C70C89008261E0 /* libncurses.5.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 27695FBE25C70C89008261E0 /* libncurses.5.tbd */; };
+		27695FC225C70D8F008261E0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27695FC125C70D8F008261E0 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,7 +37,7 @@
 		27695F9A25C70555008261E0 /* Tile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tile.cpp; sourceTree = "<group>"; };
 		27695F9B25C70555008261E0 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
 		27695F9C25C70555008261E0 /* ColorPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPair.h; sourceTree = "<group>"; };
-		27695F9D25C70555008261E0 /* map1_backup.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map1_backup.txt; sourceTree = "<group>"; };
+		27695F9D25C70555008261E0 /* map1_backup.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map1_backup.txt; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		27695F9E25C70555008261E0 /* Tile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tile.h; sourceTree = "<group>"; };
 		27695F9F25C70555008261E0 /* map-rewrite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "map-rewrite.cpp"; sourceTree = "<group>"; };
 		27695FA025C70556008261E0 /* ColorPair.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorPair.cpp; sourceTree = "<group>"; };
@@ -52,6 +54,9 @@
 		27695FAB25C70556008261E0 /* Point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Point.cpp; sourceTree = "<group>"; };
 		27695FAC25C70556008261E0 /* ColorManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorManager.cpp; sourceTree = "<group>"; };
 		27695FAD25C70556008261E0 /* map1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map1.txt; sourceTree = "<group>"; };
+		27695FB925C70BC5008261E0 /* libncurses.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libncurses.tbd; path = usr/lib/libncurses.tbd; sourceTree = SDKROOT; };
+		27695FBE25C70C89008261E0 /* libncurses.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libncurses.5.tbd; path = usr/lib/libncurses.5.tbd; sourceTree = SDKROOT; };
+		27695FC125C70D8F008261E0 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../../../../Desktop/excess/main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27695FBF25C70C89008261E0 /* libncurses.5.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +76,7 @@
 			children = (
 				27695F8F25C70491008261E0 /* Game */,
 				27695F8E25C70491008261E0 /* Products */,
+				27695FB825C70BC5008261E0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -84,6 +91,7 @@
 		27695F8F25C70491008261E0 /* Game */ = {
 			isa = PBXGroup;
 			children = (
+				27695FC125C70D8F008261E0 /* main.cpp */,
 				27695F9925C70555008261E0 /* Color.cpp */,
 				27695FA625C70556008261E0 /* Color.h */,
 				27695FAC25C70556008261E0 /* ColorManager.cpp */,
@@ -107,6 +115,15 @@
 				27695FA725C70556008261E0 /* ViewNode.h */,
 			);
 			path = Game;
+			sourceTree = "<group>";
+		};
+		27695FB825C70BC5008261E0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				27695FBE25C70C89008261E0 /* libncurses.5.tbd */,
+				27695FB925C70BC5008261E0 /* libncurses.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -167,6 +184,7 @@
 			files = (
 				27695FB025C70556008261E0 /* Node.cpp in Sources */,
 				27695FB225C70556008261E0 /* ColorPair.cpp in Sources */,
+				27695FC225C70D8F008261E0 /* main.cpp in Sources */,
 				27695FB125C70556008261E0 /* map-rewrite.cpp in Sources */,
 				27695FB525C70556008261E0 /* ColorManager.cpp in Sources */,
 				27695FAE25C70556008261E0 /* Color.cpp in Sources */,
@@ -234,6 +252,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-lncurses";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -286,6 +305,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-lncurses";
 				SDKROOT = macosx;
 			};
 			name = Release;

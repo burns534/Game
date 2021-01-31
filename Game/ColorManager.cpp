@@ -76,7 +76,7 @@ void ColorManager::create_color(std::string name, short r, short g, short b) {
         error("Error: maximum colors created");
     }
     color_values[name] = Color(r, g, b, color_pool.top());
-    init_color(color_pool.top(), r * 3.9)
+    init_color(color_pool.top(), r * 3.9, g * 3.9, b * 3.9);
     color_pool.pop();
 }
 
@@ -100,8 +100,8 @@ void ColorManager::create_pair(std::string name, std::string foreground_name, st
     if (color_pool.empty()) {
         error("Error: maximum number of color pairs created");
     } else {
-        color_pairs[name] = ColorPair(f->value.name, b->value.name, pair_pool.top());
-        init_pair(pair_pool.top(), f->value.tag, b->value.tag);
+        color_pairs[name] = ColorPair(f->second, b->second, pair_pool.top());
+        init_pair(pair_pool.top(), f->second.id, b->second.id);
         pair_pool.pop();
     }
 }
