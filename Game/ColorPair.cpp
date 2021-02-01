@@ -2,8 +2,8 @@
 
 ColorPair::ColorPair() {}
 
-ColorPair::ColorPair(Color foreground, Color background, short tag) {
+ColorPair::ColorPair(Color foreground, Color background, short id) {
     this->foreground = foreground;
     this->background = background;
-    this->tag = tag;
+    this->id = id;
 }

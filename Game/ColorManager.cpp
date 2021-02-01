@@ -8,14 +8,6 @@ static void error(const char *message) {
 ColorManager * ColorManager::shared_instance = nullptr;
 
 ColorManager::ColorManager() {
-    assert(COLOR_PAIRS >= 256);
-    assert(COLORS >= 16);
-    for (char i = 0; i < COLOR_PAIRS; i++) {
-        pair_pool.push(i);
-    }
-    for (char i = 0; i < COLORS; i++) {
-        color_pool.push(i);
-    }
     /*
         The start_color routine requires no arguments.  It must be called if the programmer wants to use col-
         ors, and before any other color manipulation routine is called.  It is good  practice  to  call  this
@@ -60,7 +52,19 @@ ColorManager::ColorManager() {
             Color pair 0 is assumed to be white on black, but is actually whatever  the  terminal  implements
             before color is initialized.  It cannot be modified by the application.
     */
+    if (!has_colors() || !can_change_color()) {
+        error("Your terminal does not support colors");
+    }
+    
     start_color();
+    assert(COLOR_PAIRS >= MAX_COLOR_PAIRS);
+    assert(COLORS >= MAX_COLORS);
+    for (short i = 0; i < MAX_COLOR_PAIRS; i++) {
+        pair_pool.push(i);
+    }
+    for (short i = 0; i < MAX_COLORS; i++) {
+        color_pool.push(i);
+    }
 }
 
 ColorManager * ColorManager::shared() {
@@ -72,7 +76,7 @@ ColorManager * ColorManager::shared() {
 }
 
 void ColorManager::create_color(std::string name, short r, short g, short b) {
-    if (color_values.size() == COLORS) {
+    if (color_values.size() == MAX_COLORS) {
         error("Error: maximum colors created");
     }
     color_values[name] = Color(r, g, b, color_pool.top());
@@ -90,8 +94,19 @@ void ColorManager::delete_color(std::string name) {
 
     }
 }
+// probably shouldn't be used
+chtype ColorManager::color_id(std::string name) {
+    std::map<std::string, Color>::iterator it = color_values.find(name);
+    if (it == color_values.end()) {
+        error("Error: Color pair does not exist");
+    }
+    return it->second.id;
+}
 
 void ColorManager::create_pair(std::string name, std::string foreground_name, std::string background_name) {
+    if (color_pairs.size() == MAX_COLOR_PAIRS) {
+        error("Error: Maximum number of color pairs created");
+    }
     std::map<std::string, Color>::iterator f = color_values.find(foreground_name);
     std::map<std::string, Color>::iterator b = color_values.find(background_name);
     if (f == color_values.end() || b == color_values.end()) {
@@ -111,9 +126,9 @@ void ColorManager::toggle_pair(std::string name) {
     if (it == color_pairs.end()) {
         error("Error: Color pair does not exist");
     } else if (name.compare(active_pair) == 0) {
-        attroff(COLOR_PAIR(it->second.tag));
+        wattroff(active_window, COLOR_PAIR(it->second.id));
     } else {
-        attron(COLOR_PAIR(it->second.tag));
+        wattron(active_window, COLOR_PAIR(it->second.id));
     }
 }
 
@@ -122,7 +137,40 @@ void ColorManager::delete_pair(std::string name) {
     if (it == color_pairs.end()) {
         error("Error: Color pair does not exist");
     } else {
-        pair_pool.push(it->second.tag);
+        pair_pool.push(it->second.id);
         color_pairs.erase(it);
     }
+}
+
+chtype ColorManager::pair_id(std::string name) {
+    std::map<std::string, ColorPair>::iterator it = color_pairs.find(name);
+    if (it == color_pairs.end()) {
+        error("Error: Color pair does not exist");
+    }
+    return it->second.id;
+}
+
+void ColorManager::set_background(std::string name) {
+    std::map<std::string, ColorPair>::iterator it = color_pairs.find(name);
+    if (it == color_pairs.end()) {
+        error("Error: Color pair does not exist");
+    }
+    
+    wbkgd(active_window, COLOR_PAIR(it->second.id));
+    refresh();
+    wrefresh(active_window);
+}
+
+void ColorManager::set_window(WINDOW *win) {
+    this->active_window = win;
+}
+
+void ColorManager::move_putc(std::string name, int x, int y, char c) {
+    std::map<std::string, ColorPair>::iterator it = color_pairs.find(name);
+    if (it == color_pairs.end()) {
+        error("Error: Color pair does not exist");
+    }
+    wattron(active_window, COLOR_PAIR(it->second.id));
+    mvwaddch(active_window, y, 2 * x, c);
+    mvwaddch(active_window, y, 2 * x + 1, 32);
 }

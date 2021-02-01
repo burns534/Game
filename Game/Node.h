@@ -2,10 +2,12 @@
 #define Node_h
 
 #include "Point.h"
+#include "Logger.h"
 #include <string>
 #include <map>
 
 class Node {
+    static size_t current_hash;
 public:
     size_t hash;
     Node *parent;

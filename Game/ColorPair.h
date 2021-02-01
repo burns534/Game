@@ -2,7 +2,7 @@
 
 struct ColorPair {
     Color foreground, background;
-    short tag;
+    short id;
     ColorPair();
-    ColorPair(Color foreground, Color background, short tag);
+    ColorPair(Color foreground, Color background, short id);
 };

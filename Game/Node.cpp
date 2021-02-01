@@ -1,6 +1,6 @@
 #include "Node.h"
 
-static size_t current_hash = 0;
+size_t Node::current_hash = 0;
 
 Node::Node() {
     parent = nullptr;

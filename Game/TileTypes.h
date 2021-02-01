@@ -3,7 +3,8 @@
 
 enum TileType {
     DEFAULT,
-    WATER,
+    SHALLOW_WATER,
+    DEEP_WATER,
     GRASS,
     SAND,
     DIRT,

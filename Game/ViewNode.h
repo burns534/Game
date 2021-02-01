@@ -2,11 +2,11 @@
 #define ViewNode_h
 #include "Node.h"
 
-class ViewNode: public Node {
-public: 
-    std::string foreground_color, background_color;
+struct ViewNode: public Node {
+    std::string color;
+    double zPosition;
     ViewNode();
-    ViewNode(Point position, std::string foreground_color, std::string background_color);
+    ViewNode(Point position, std::string color, double zPosition);
 };
 
 #endif
